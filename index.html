@@ -21,7 +21,7 @@
             background: linear-gradient(to bottom, #000000 75%, #300000 100%);
             background-attachment: fixed; /* لضمان تغطية التدرج لكامل الصفحة عند التمرير */
         }
-        /* تأثير التحويم على الصور */
+        /* تأثير التحويم على الصور والفيديوهات */
         .gallery-item .overlay {
             transition: opacity 0.3s ease-in-out;
         }
@@ -36,40 +36,54 @@
             -ms-overflow-style: none;  /* IE and Edge */
             scrollbar-width: none;  /* Firefox */
         }
-        /* النمط النشط لأزرار الفلتر */
-        .filter-btn.active {
+        /* النمط النشط لأزرار الفلتر والوسائط */
+        .active-btn {
             background-color: #4f46e5; /* indigo-600 */
             color: white;
             box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
             transform: translateY(-2px);
         }
-        .filter-btn {
+        .filter-btn, .media-type-btn {
             transition: all 0.2s ease-in-out;
         }
         /* نمط راقي لاسم الموقع (h1) */
         .classy-text-glow {
             text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 15px rgba(255, 255, 255, 0.3);
         }
+        /* تنسيق الفيديو داخل المعرض ليتناسب مع تخطيط الشبكة */
+        .gallery-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 </head>
-<body class="text-white"> <!-- إزالة bg-gray-900 من body لتطبيق التدرج -->
+<body class="text-white">
 
     <!-- Header -->
-    <header class="text-center py-12 md:py-20"> <!-- إزالة bg-gray-900 من Header -->
+    <header class="text-center py-12 md:py-20">
         <div class="container mx-auto px-4">
-            <!-- تحديث نمط h1 ليكون راقياً أكثر مع تدرج ذهبي ولمسة توهج خفيفة -->
             <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-100 to-yellow-500 mb-4 classy-text-glow">
                 Wallpapers Zone
             </h1>
             <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-                ابحث عن الصورة المثالية لجهازك من بين آلاف الخلفيات عالية الجودة.
+                ابحث عن الصورة المثالية أو الفيديو القصير لجهازك من بين آلاف الخلفيات عالية الجودة.
             </p>
         </div>
     </header>
 
     <!-- Search and Filter Section -->
-    <!-- إزالة bg-gray-900/80 وتغييرها لـ bg-black/50 لجعلها شفافة أكثر وتسمح بمرور التدرج -->
     <div class="container mx-auto px-4 sticky top-0 z-20 bg-black/50 backdrop-blur-sm py-4">
+        <!-- Media Type Buttons (Photos/Videos) -->
+        <div class="flex justify-center items-center space-x-4 space-x-reverse mb-6">
+            <button id="photosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition">
+                الصور
+            </button>
+            <button id="videosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition">
+                الفيديوهات
+            </button>
+        </div>
+
         <!-- Search Bar -->
         <div class="relative max-w-xl mx-auto mb-6">
             <input type="text" id="searchInput" placeholder="ابحث عن خلفيات..." class="w-full bg-gray-800 text-white border-2 border-gray-700 rounded-full py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
@@ -86,12 +100,12 @@
         </div>
     </div>
 
-    <!-- Image Gallery -->
+    <!-- Media Gallery -->
     <main class="container mx-auto p-4">
         <!-- Loading Spinner -->
         <div id="loadingSpinner" class="text-center py-20 hidden">
             <div class="animate-spin inline-block w-12 h-12 border-4 border-t-4 border-indigo-500 border-solid rounded-full"></div>
-            <p class="text-gray-400 mt-4 text-xl">جارٍ تحميل الصور...</p>
+            <p class="text-gray-400 mt-4 text-xl">جارٍ تحميل المحتوى...</p>
         </div>
 
         <!-- Error Message -->
@@ -100,10 +114,16 @@
         </div>
 
         <div id="gallery" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            <!-- سيتم إدراج الصور هنا بواسطة JavaScript -->
+            <!-- سيتم إدراج الصور/الفيديوهات هنا بواسطة JavaScript -->
         </div>
         <div id="noResults" class="text-center text-gray-400 py-20 text-2xl hidden">
             <p>لم يتم العثور على نتائج للبحث الحالي.</p>
+        </div>
+
+        <!-- Spinner for Infinite Scroll -->
+        <div id="infiniteScrollSpinner" class="text-center py-8 hidden">
+            <div class="animate-spin inline-block w-8 h-8 border-3 border-t-3 border-indigo-400 border-solid rounded-full"></div>
+            <p class="text-gray-400 mt-2 text-base">جارٍ تحميل المزيد...</p>
         </div>
     </main>
     
@@ -111,14 +131,18 @@
     <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 hidden p-4">
         <div class="relative bg-gray-800 rounded-lg max-w-4xl max-h-full w-full h-auto overflow-auto">
              <button id="closeModal" class="absolute top-4 right-4 text-white text-4xl font-bold z-10">&times;</button>
-             <img id="modalImage" src="" alt="صورة مكبرة" class="w-full h-auto object-contain rounded-t-lg max-h-[75vh]">
+             <!-- عنصر الصورة للفوتوز -->
+             <img id="modalImage" src="" alt="صورة مكبرة" class="w-full h-auto object-contain rounded-t-lg max-h-[75vh] hidden">
+             <!-- عنصر الفيديو للفيديوهات -->
+             <video id="modalVideo" controls loop muted class="w-full h-auto object-contain rounded-t-lg max-h-[75vh] hidden"></video>
+
              <div class="p-6">
                 <h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
                 <a id="downloadBtn" href="#" download="wallpaper.jpg" class="inline-flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                     </svg>
-                    تحميل الصورة
+                    <span id="downloadBtnText">تحميل الصورة</span>
                 </a>
              </div>
         </div>
@@ -136,12 +160,17 @@
             const noResults = document.getElementById('noResults');
             const modal = document.getElementById('modal');
             const modalImage = document.getElementById('modalImage');
+            const modalVideo = document.getElementById('modalVideo'); // New: Video element in modal
             const modalTitle = document.getElementById('modalTitle');
             const closeModalBtn = document.getElementById('closeModal');
             const downloadBtn = document.getElementById('downloadBtn');
+            const downloadBtnText = document.getElementById('downloadBtnText'); // New: Text for download button
             const loadingSpinner = document.getElementById('loadingSpinner'); 
+            const infiniteScrollSpinner = document.getElementById('infiniteScrollSpinner'); 
             const errorMessage = document.getElementById('errorMessage');    
             const filterButtonsContainer = document.getElementById('filterButtons');
+            const photosBtn = document.getElementById('photosBtn');   // New: Photos button
+            const videosBtn = document.getElementById('videosBtn');   // New: Videos button
 
             // قائمة الفئات للفلترة
             const CATEGORIES = [
@@ -156,25 +185,63 @@
                 { name: 'سيارات', query: 'car wallpapers' }
             ];
 
-            let currentActiveFilterButton = null; // لتتبع الزر النشط حالياً
+            let allLoadedMedia = []; // لتخزين جميع الصور/الفيديوهات التي تم تحميلها
+            let currentPage = 1;
+            let currentQuery = CATEGORIES[0].query; // الاستعلام الافتراضي عند التحميل
+            let currentMediaType = 'photos'; // Default media type: photos
+            let isFetching = false; 
+            let hasMore = true; 
 
-            // --- دالة لجلب الصور من Pexels API ---
-            async function fetchImages(query) { 
-                loadingSpinner.classList.remove('hidden'); // إظهار مؤشر التحميل
-                errorMessage.classList.add('hidden');      // إخفاء أي رسالة خطأ سابقة
-                gallery.classList.add('hidden');           // إخفاء المعرض أثناء التحميل
-                noResults.classList.add('hidden');         // إخفاء رسالة "لا توجد نتائج" أثناء التحميل
+            let currentActiveFilterButton = null; 
+            let currentActiveMediaTypeButton = null; // New: To track active media type button
+
+            // --- دالة مساعدة للحصول على أفضل جودة فيديو ---
+            function getBestQualityVideoUrl(videoFiles) {
+                // Try to find the 'hd' quality first, then 'sd', then any mp4.
+                let hdVideo = videoFiles.find(file => file.quality === 'hd' && file.file_type === 'video/mp4');
+                let sdVideo = videoFiles.find(file => file.quality === 'sd' && file.file_type === 'video/mp4');
+                let anyMp4Video = videoFiles.find(file => file.file_type === 'video/mp4');
+
+                return (hdVideo || sdVideo || anyMp4Video)?.link || null;
+            }
+
+            // --- دالة لجلب الصور أو الفيديوهات من Pexels API ---
+            async function fetchMedia(query, page, mediaType, append = false) { 
+                if (isFetching || (!hasMore && append)) {
+                    return; 
+                }
+
+                isFetching = true;
+                if (append) {
+                    infiniteScrollSpinner.classList.remove('hidden');
+                } else {
+                    loadingSpinner.classList.remove('hidden'); 
+                    gallery.classList.add('hidden'); 
+                    errorMessage.classList.add('hidden');      
+                    noResults.classList.add('hidden');         
+                }
 
                 try {
-                    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=30`; // زيادة عدد الصور لكل صفحة
+                    let url;
+                    let parsedMedia = [];
+
+                    if (mediaType === 'photos') {
+                        url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=80&page=${page}`;
+                    } else if (mediaType === 'videos') {
+                        url = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=80&page=${page}`;
+                    } else {
+                        throw new Error("نوع وسائط غير مدعوم.");
+                    }
+
+                    console.log('Fetching from Pexels URL:', url); 
                     const response = await fetch(url, {
                         headers: {
-                            Authorization: API_KEY // استخدام مفتاح API للمصادقة
+                            Authorization: API_KEY 
                         }
                     });
 
+                    console.log('Pexels API response status:', response.status); 
                     if (!response.ok) {
-                        // معالجة أخطاء HTTP (مثلاً 403 للمفتاح غير الصالح/حدود الاستخدام)
                         if (response.status === 403) {
                             throw new Error("خطأ في الواجهة البرمجية: تأكد من صحة مفتاح API أو تجاوزت حد الاستخدام اليومي.");
                         }
@@ -183,137 +250,254 @@
 
                     const data = await response.json();
                     
-                    if (!data.photos || data.photos.length === 0) {
-                        return []; // لا توجد صور مطابقة للاستعلام
+                    if (mediaType === 'photos') {
+                        console.log('Pexels API photos received (count):', data.photos ? data.photos.length : 0); 
+                        if (!data.photos || data.photos.length === 0) {
+                            hasMore = false;
+                            return [];
+                        }
+                        parsedMedia = data.photos.map(photo => ({
+                            id: photo.id,
+                            title: photo.alt || 'صورة بدون عنوان', 
+                            category: photo.photographer || 'مصور غير معروف', 
+                            type: 'photo', // New: Identify as photo
+                            src: photo.src.medium, 
+                            original_src: photo.src.original 
+                        }));
+                        hasMore = (data.next_page !== undefined && data.next_page !== null);
+
+                    } else if (mediaType === 'videos') {
+                        console.log('Pexels API videos received (count):', data.videos ? data.videos.length : 0); 
+                        if (!data.videos || data.videos.length === 0) {
+                            hasMore = false;
+                            return [];
+                        }
+                        parsedMedia = data.videos.map(video => ({
+                            id: video.id,
+                            title: video.url.split('/').pop().replace(/-/g, ' ') || 'فيديو بدون عنوان', // Use slug as title
+                            category: video.user.name || 'مصور غير معروف', 
+                            type: 'video', // New: Identify as video
+                            src: video.image, // Thumbnail image for video
+                            original_src: getBestQualityVideoUrl(video.video_files) // Get best quality video link for download/modal
+                        }));
+                        hasMore = (data.next_page !== undefined && data.next_page !== null);
                     }
 
-                    // تحويل بيانات Pexels إلى التنسيق المطلوب لعرضها في المعرض
-                    return data.photos.map(photo => ({
-                        id: photo.id,
-                        title: photo.alt || 'صورة بدون عنوان', // استخدام نص بديل للصورة كعنوان
-                        category: photo.photographer || 'مصور غير معروف', // استخدام اسم المصور كفئة مؤقتة
-                        src: photo.src.medium, // استخدام جودة متوسطة لعرضها في المعرض لسرعة التحميل
-                        original_src: photo.src.original // استخدام الجودة الأصلية لزر التحميل
-                    }));
+                    if (append) {
+                        allLoadedMedia = [...allLoadedMedia, ...parsedMedia];
+                    } else {
+                        allLoadedMedia = parsedMedia;
+                    }
+
+                    displayMedia(); 
+                    
+                    if (allLoadedMedia.length === 0 && !append) { 
+                        noResults.classList.remove('hidden');
+                    } else {
+                        noResults.classList.add('hidden');
+                    }
 
                 } catch (error) {
-                    console.error('حدث خطأ أثناء جلب الصور من Pexels:', error);
-                    errorMessage.textContent = error.message || 'عذراً، حدث خطأ أثناء تحميل الصور من Pexels. الرجاء المحاولة مرة أخرى لاحقاً.';
-                    errorMessage.classList.remove('hidden'); // إظهار رسالة الخطأ
-                    gallery.classList.add('hidden'); // التأكد من إخفاء المعرض عند الخطأ
-                    return []; // إرجاع مصفوفة فارغة عند الخطأ
+                    console.error('An error occurred during fetchMedia:', error); 
+                    errorMessage.textContent = error.message || 'عذراً، حدث خطأ أثناء تحميل المحتوى من Pexels. الرجاء المحاولة مرة أخرى لاحقاً.';
+                    errorMessage.classList.remove('hidden'); 
+                    if (!append) { 
+                        gallery.classList.add('hidden'); 
+                    }
+                    hasMore = false; // Stop infinite scroll on error
                 } finally {
-                    loadingSpinner.classList.add('hidden'); // إخفاء مؤشر التحميل دائماً
+                    isFetching = false;
+                    loadingSpinner.classList.add('hidden'); 
+                    infiniteScrollSpinner.classList.add('hidden');
+                    gallery.classList.remove('hidden'); 
                 }
             }
 
-            // --- دالة عرض الصور في المعرض ---
-            function displayImages(imagesToDisplay) {
-                gallery.innerHTML = ''; // مسح المحتوى الحالي للمعرض
-                if (imagesToDisplay.length === 0) {
-                    noResults.classList.remove('hidden'); // إظهار رسالة "لا توجد نتائج"
+            // --- دالة عرض الصور أو الفيديوهات في المعرض ---
+            function displayMedia() {
+                gallery.innerHTML = ''; 
+                if (allLoadedMedia.length === 0) {
+                    noResults.classList.remove('hidden');
                     gallery.classList.add('hidden');
                 } else {
-                    noResults.classList.add('hidden'); // إخفاء رسالة "لا توجد نتائج"
-                    gallery.classList.remove('hidden'); // إظهار المعرض
+                    noResults.classList.add('hidden');
+                    gallery.classList.remove('hidden');
                 }
 
-                imagesToDisplay.forEach(image => {
+                allLoadedMedia.forEach(mediaItem => {
                     const item = document.createElement('div');
                     item.className = 'gallery-item relative rounded-lg overflow-hidden cursor-pointer group shadow-lg transition-all duration-300 transform hover:scale-105';
-                    item.innerHTML = `
-                        <img src="${image.src}" alt="${image.title}" class="w-full h-48 sm:h-64 md:h-72 object-cover transition duration-300 transform group-hover:scale-110" loading="lazy">
-                        <div class="overlay absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 p-4">
-                            <div class="text-center">
-                                <h3 class="font-bold text-lg">${image.title}</h3>
-                                <p class="text-sm text-gray-300">${image.category}</p>
+                    
+                    if (mediaItem.type === 'photo') {
+                        item.innerHTML = `
+                            <img src="${mediaItem.src}" alt="${mediaItem.title}" class="w-full h-48 sm:h-64 md:h-72 object-cover transition duration-300 transform group-hover:scale-110" loading="lazy">
+                            <div class="overlay absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 p-4">
+                                <div class="text-center">
+                                    <h3 class="font-bold text-lg">${mediaItem.title}</h3>
+                                    <p class="text-sm text-gray-300">${mediaItem.category}</p>
+                                </div>
                             </div>
-                        </div>
-                    `;
-                    // عند النقر على الصورة، افتح المودال
-                    item.addEventListener('click', () => openModal(image));
+                        `;
+                    } else { // mediaItem.type === 'video'
+                        item.innerHTML = `
+                            <video poster="${mediaItem.src}" muted autoplay loop class="w-full h-48 sm:h-64 md:h-72 object-cover transition duration-300 transform group-hover:scale-110">
+                                <source src="${mediaItem.original_src}" type="video/mp4">
+                                متصفحك لا يدعم عنصر الفيديو.
+                            </video>
+                            <div class="overlay absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 p-4">
+                                <div class="text-center">
+                                    <h3 class="font-bold text-lg">${mediaItem.title}</h3>
+                                    <p class="text-sm text-gray-300">${mediaItem.category}</p>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white mt-2 mx-auto opacity-75 group-hover:opacity-100 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                            </div>
+                        `;
+                    }
+                    item.addEventListener('click', () => openModal(mediaItem));
                     gallery.appendChild(item);
                 });
             }
 
             // --- دالة إعداد أزرار الفلترة ---
             function setupFilterButtons() {
-                filterButtonsContainer.innerHTML = ''; // مسح الأزرار القديمة
+                filterButtonsContainer.innerHTML = ''; 
                 CATEGORIES.forEach(category => {
                     const button = document.createElement('button');
                     button.textContent = category.name;
                     button.className = 'filter-btn px-4 py-2 text-sm font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition whitespace-nowrap';
                     
-                    // تعيين زر "الكل" كنشط افتراضياً عند التحميل الأولي
                     if (category.name === 'الكل') {
-                        button.classList.add('active');
+                        button.classList.add('active-btn'); // Use active-btn for consistency
                         currentActiveFilterButton = button;
                     }
 
                     button.addEventListener('click', async () => {
-                        // إزالة النمط النشط من الزر السابق
                         if (currentActiveFilterButton) {
-                            currentActiveFilterButton.classList.remove('active');
+                            currentActiveFilterButton.classList.remove('active-btn');
                         }
-                        // إضافة النمط النشط للزر الحالي
-                        button.classList.add('active');
+                        button.classList.add('active-btn');
                         currentActiveFilterButton = button;
                         
-                        // مسح حقل البحث عند اختيار فئة
-                        searchInput.value = '';
-
-                        // جلب الصور بناءً على استعلام الفئة
-                        const images = await fetchImages(category.query);
-                        displayImages(images);
+                        searchInput.value = ''; 
+                        
+                        currentPage = 1;
+                        currentQuery = category.query;
+                        hasMore = true; 
+                        await fetchMedia(currentQuery, currentPage, currentMediaType, false); 
                     });
                     filterButtonsContainer.appendChild(button);
                 });
             }
 
-
             // --- منطق المودال (Lightbox) ---
-            function openModal(image) {
-                modalImage.src = image.original_src; // استخدام الجودة الأصلية في المودال
-                modalTitle.textContent = image.title;
-                downloadBtn.href = image.original_src;
-                // إنشاء اسم ملف للتحميل (استبدال المسافات بشرطات سفلية)
-                downloadBtn.download = `${image.title.replace(/ /g, '_') || 'wallpaper'}.jpg`; 
+            function openModal(mediaItem) {
+                // Hide both image and video elements first
+                modalImage.classList.add('hidden');
+                modalVideo.classList.add('hidden');
+                modalVideo.pause(); // Pause any currently playing video in modal
+
+                modalTitle.textContent = mediaItem.title;
+                downloadBtn.href = mediaItem.original_src;
+
+                if (mediaItem.type === 'photo') {
+                    modalImage.src = mediaItem.original_src; 
+                    modalImage.classList.remove('hidden');
+                    downloadBtn.download = `${mediaItem.title.replace(/ /g, '_') || 'wallpaper'}.jpg`; 
+                    downloadBtnText.textContent = 'تحميل الصورة';
+                } else { // mediaItem.type === 'video'
+                    modalVideo.src = mediaItem.original_src;
+                    modalVideo.classList.remove('hidden');
+                    modalVideo.load(); // Load the video
+                    modalVideo.play(); // Autoplay the video (muted by default)
+                    downloadBtn.download = `${mediaItem.title.replace(/ /g, '_') || 'video'}.mp4`; 
+                    downloadBtnText.textContent = 'تحميل الفيديو';
+                }
+
                 modal.classList.remove('hidden');
-                modal.classList.add('flex'); // لجعل المودال مرئياً ومرتكزاً
-                document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية عند فتح المودال
+                modal.classList.add('flex'); 
+                document.body.style.overflow = 'hidden'; 
             }
 
             function closeModal() {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                document.body.style.overflow = 'auto'; // إعادة التمرير عند إغلاق المودال
+                modalVideo.pause(); // Pause video when modal is closed
+                document.body.style.overflow = 'auto'; 
             }
 
             // --- ربط الأحداث ---
-            // عند الكتابة في حقل البحث، قم بجلب وعرض الصور
             searchInput.addEventListener('input', async () => {
                 const query = searchInput.value.trim();
-                // إزالة النمط النشط من زر الفلتر عند البحث
+                console.log('Search input event fired. Query:', query); 
+                // Remove active class from filter buttons when searching
                 if (currentActiveFilterButton) {
-                    currentActiveFilterButton.classList.remove('active');
+                    currentActiveFilterButton.classList.remove('active-btn');
                     currentActiveFilterButton = null;
                 }
-                const images = await fetchImages(query || CATEGORIES[0].query); // إذا كان البحث فارغاً، عد إلى فئة "الكل" الافتراضية
-                displayImages(images);
+                
+                currentPage = 1;
+                currentQuery = query || (currentMediaType === 'photos' ? CATEGORIES[0].query : 'videos'); // Default to 'videos' for video search if empty
+                hasMore = true; 
+                await fetchMedia(currentQuery, currentPage, currentMediaType, false); 
+                console.log('Search operation completed. allLoadedMedia count:', allLoadedMedia.length); 
             });
 
-            // عند النقر على زر إغلاق المودال
+            // Media type button event listeners
+            photosBtn.addEventListener('click', async () => {
+                if (currentActiveMediaTypeButton) {
+                    currentActiveMediaTypeButton.classList.remove('active-btn');
+                }
+                photosBtn.classList.add('active-btn');
+                currentActiveMediaTypeButton = photosBtn;
+
+                currentMediaType = 'photos';
+                currentPage = 1;
+                currentQuery = searchInput.value.trim() || CATEGORIES[0].query; // Use existing search or default category
+                hasMore = true;
+                await fetchMedia(currentQuery, currentPage, currentMediaType, false);
+            });
+
+            videosBtn.addEventListener('click', async () => {
+                if (currentActiveMediaTypeButton) {
+                    currentActiveMediaTypeButton.classList.remove('active-btn');
+                }
+                videosBtn.classList.add('active-btn');
+                currentActiveMediaTypeButton = videosBtn;
+
+                currentMediaType = 'videos';
+                currentPage = 1;
+                currentQuery = searchInput.value.trim() || 'videos'; // Default search query for videos
+                hasMore = true;
+                await fetchMedia(currentQuery, currentPage, currentMediaType, false);
+            });
+
+
             closeModalBtn.addEventListener('click', closeModal);
-            // عند النقر خارج الصورة في المودال، قم بإغلاق المودال
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeModal();
                 }
             });
 
+            // --- حدث التمرير للتحميل اللانهائي ---
+            window.addEventListener('scroll', () => {
+                if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 500) { 
+                    if (!isFetching && hasMore) {
+                        currentPage++;
+                        fetchMedia(currentQuery, currentPage, currentMediaType, true); 
+                    }
+                }
+            });
+
             // --- التشغيل الأولي: إعداد الأزرار وجلب الصور عند تحميل الصفحة ---
             setupFilterButtons();
-            fetchImages(CATEGORIES[0].query).then(displayImages); // جلب الصور الافتراضية "الكل" عند البدء
+            // Activate the default media type button (Photos)
+            photosBtn.classList.add('active-btn');
+            currentActiveMediaTypeButton = photosBtn;
+            fetchMedia(currentQuery, currentPage, currentMediaType, false); 
         });
     </script>
 </body>
