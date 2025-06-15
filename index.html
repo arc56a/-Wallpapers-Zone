@@ -43,7 +43,7 @@
             box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
             transform: translateY(-2px);
         }
-        .filter-btn, .media-type-btn {
+        .filter-btn, .media-type-btn, .header-btn {
             transition: all 0.2s ease-in-out;
         }
         /* نمط راقي لاسم الموقع (h1) */
@@ -66,9 +66,19 @@
             <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-100 to-yellow-500 mb-4 classy-text-glow">
                 Wallpapers Zone
             </h1>
-            <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+            <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-8">
                 ابحث عن الصورة المثالية أو الفيديو القصير لجهازك من بين آلاف الخلفيات عالية الجودة.
             </p>
+
+            <!-- Buttons to open Modals -->
+            <div class="flex justify-center items-center space-x-4 space-x-reverse">
+                <button id="openPointsModalBtn" class="header-btn bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 active:scale-95">
+                    نقاطي <span id="currentPointsDisplay" class="ml-2 text-green-400 font-extrabold">0</span>
+                </button>
+                <button id="openSubscriptionModalBtn" class="header-btn bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105 active:scale-95">
+                    الاشتراكات
+                </button>
+            </div>
         </div>
     </header>
 
@@ -79,8 +89,11 @@
             <button id="photosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition">
                 الصور
             </button>
-            <button id="videosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition">
-                الفيديوهات
+            <button id="videosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition flex items-center justify-center">
+                الفيديوهات 
+                <svg id="videosLockIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v3h8z" />
+                </svg>
             </button>
         </div>
 
@@ -127,13 +140,11 @@
         </div>
     </main>
     
-    <!-- Modal (Lightbox) -->
-    <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 hidden p-4">
+    <!-- Modal (Lightbox) - For media preview -->
+    <div id="mediaModal" class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 hidden p-4">
         <div class="relative bg-gray-800 rounded-lg max-w-4xl max-h-full w-full h-auto overflow-auto">
-             <button id="closeModal" class="absolute top-4 right-4 text-white text-4xl font-bold z-10">&times;</button>
-             <!-- عنصر الصورة للفوتوز -->
+             <button id="closeMediaModal" class="absolute top-4 right-4 text-white text-4xl font-bold z-10">&times;</button>
              <img id="modalImage" src="" alt="صورة مكبرة" class="w-full h-auto object-contain rounded-t-lg max-h-[75vh] hidden">
-             <!-- عنصر الفيديو للفيديوهات -->
              <video id="modalVideo" controls loop muted class="w-full h-auto object-contain rounded-t-lg max-h-[75vh] hidden"></video>
 
              <div class="p-6">
@@ -148,29 +159,109 @@
         </div>
     </div>
 
+    <!-- Points Modal -->
+    <div id="pointsModal" class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 hidden p-4">
+        <div class="relative bg-gray-800 rounded-lg max-w-lg w-full h-auto overflow-auto p-6 text-center">
+            <button id="closePointsModal" class="absolute top-4 right-4 text-white text-4xl font-bold z-10">&times;</button>
+            <h2 class="text-3xl font-bold text-white mb-6">إدارة النقاط</h2>
+
+            <!-- Points Display -->
+            <div class="text-4xl font-extrabold mb-8 text-green-400">
+                النقاط: <span id="pointsDisplayModal">0</span>
+            </div>
+
+            <!-- Collect 1 point button -->
+            <div class="mb-6">
+                <button id="collectPointsBtnModal" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    اجمع نقطة
+                </button>
+            </div>
+
+            <!-- Daily Bonus Section -->
+            <div class="mb-6">
+                <button id="dailyBonusBtnModal" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    جائزة يومية: +50 نقطة
+                </button>
+                <p id="dailyBonusMessageModal" class="text-sm text-gray-400 mt-2"></p>
+            </div>
+
+            <!-- Code Input Section -->
+            <div class="w-full max-w-xs mx-auto">
+                <input type="text" id="code1000PointsInputModal" placeholder="ادخل كود النقاط هنا" class="w-full bg-gray-800 text-white border-2 border-gray-700 rounded-full py-2 px-4 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                <button id="redeemCodeBtnModal" class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    استبدل الكود
+                </button>
+                <p id="codeMessageModal" class="text-sm text-center mt-2"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subscription Modal -->
+    <div id="subscriptionModal" class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 hidden p-4">
+        <div class="relative bg-gray-800 rounded-lg max-w-lg w-full h-auto overflow-auto p-6 text-center">
+            <button id="closeSubscriptionModal" class="absolute top-4 right-4 text-white text-4xl font-bold z-10">&times;</button>
+            <h2 class="text-3xl font-bold text-white mb-6">إدارة الاشتراكات</h2>
+
+            <!-- Video Subscription Section -->
+            <div class="mb-6 p-4 border border-gray-700 rounded-lg bg-gray-900">
+                <h3 class="text-xl font-bold text-white mb-3">اشتراك الفيديوهات</h3>
+                <p class="text-gray-300 mb-4">
+                    افتح عالم الفيديوهات لمدة شهر كامل! التكلفة: <span class="text-green-400 font-bold">1000 نقطة</span>.
+                </p>
+                <button id="subscribeVideoBtnModal" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                    اشترك الآن
+                </button>
+                <p id="videoSubscriptionMessageModal" class="text-sm text-center mt-2"></p>
+            </div>
+        </div>
+    </div>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // مفتاح Pexels API الخاص بك
             const API_KEY = 'Seq0UzUmWDBJxYw9x0lyGydsk25Nm1Vgdp6uWQaoBw13Egz35HWVAMTG'; 
 
-            // --- عناصر DOM ---
+            // --- عناصر DOM الرئيسية ---
             const gallery = document.getElementById('gallery');
             const searchInput = document.getElementById('searchInput');
             const noResults = document.getElementById('noResults');
-            const modal = document.getElementById('modal');
-            const modalImage = document.getElementById('modalImage');
-            const modalVideo = document.getElementById('modalVideo'); // New: Video element in modal
-            const modalTitle = document.getElementById('modalTitle');
-            const closeModalBtn = document.getElementById('closeModal');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const downloadBtnText = document.getElementById('downloadBtnText'); // New: Text for download button
             const loadingSpinner = document.getElementById('loadingSpinner'); 
             const infiniteScrollSpinner = document.getElementById('infiniteScrollSpinner'); 
             const errorMessage = document.getElementById('errorMessage');    
             const filterButtonsContainer = document.getElementById('filterButtons');
-            const photosBtn = document.getElementById('photosBtn');   // New: Photos button
-            const videosBtn = document.getElementById('videosBtn');   // New: Videos button
+            const photosBtn = document.getElementById('photosBtn');   
+            const videosBtn = document.getElementById('videosBtn');   
+            const videosLockIcon = document.getElementById('videosLockIcon'); // Lock icon for videos button
+
+            // --- عناصر Modal للوسائط (mediaModal) ---
+            const mediaModal = document.getElementById('mediaModal'); 
+            const closeMediaModalBtn = document.getElementById('closeMediaModal'); 
+            const modalImage = document.getElementById('modalImage');
+            const modalVideo = document.getElementById('modalVideo'); 
+            const modalTitle = document.getElementById('modalTitle');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const downloadBtnText = document.getElementById('downloadBtnText'); 
+
+            // --- عناصر Modal للنقاط (pointsModal) ---
+            const openPointsModalBtn = document.getElementById('openPointsModalBtn'); 
+            const currentPointsDisplay = document.getElementById('currentPointsDisplay'); 
+            const pointsModal = document.getElementById('pointsModal');
+            const closePointsModal = document.getElementById('closePointsModal');
+            const pointsDisplayModal = document.getElementById('pointsDisplayModal'); 
+            const collectPointsBtnModal = document.getElementById('collectPointsBtnModal');
+            const dailyBonusBtnModal = document.getElementById('dailyBonusBtnModal');
+            const dailyBonusMessageModal = document.getElementById('dailyBonusMessageModal');
+            const code1000PointsInputModal = document.getElementById('code1000PointsInputModal');
+            const redeemCodeBtnModal = document.getElementById('redeemCodeBtnModal');
+            const codeMessageModal = document.getElementById('codeMessageModal'); 
+
+            // --- عناصر Modal للاشتراكات (subscriptionModal) ---
+            const openSubscriptionModalBtn = document.getElementById('openSubscriptionModalBtn'); // New button to open subscription modal
+            const subscriptionModal = document.getElementById('subscriptionModal'); // New subscription modal
+            const closeSubscriptionModal = document.getElementById('closeSubscriptionModal'); // Close button for subscription modal
+            const subscribeVideoBtnModal = document.getElementById('subscribeVideoBtnModal'); 
+            const videoSubscriptionMessageModal = document.getElementById('videoSubscriptionMessageModal'); 
 
             // قائمة الفئات للفلترة
             const CATEGORIES = [
@@ -185,19 +276,32 @@
                 { name: 'سيارات', query: 'car wallpapers' }
             ];
 
-            let allLoadedMedia = []; // لتخزين جميع الصور/الفيديوهات التي تم تحميلها
+            let allLoadedMedia = []; 
             let currentPage = 1;
-            let currentQuery = CATEGORIES[0].query; // الاستعلام الافتراضي عند التحميل
-            let currentMediaType = 'photos'; // Default media type: photos
+            let currentQuery = CATEGORIES[0].query; 
+            let currentMediaType = 'photos'; 
             let isFetching = false; 
             let hasMore = true; 
 
             let currentActiveFilterButton = null; 
-            let currentActiveMediaTypeButton = null; // New: To track active media type button
+            let currentActiveMediaTypeButton = null; 
+
+            // --- متغيرات النقاط (محفوظة في localStorage) ---
+            let points = parseInt(localStorage.getItem('userPoints') || '0', 10);
+            let lastDailyBonusTime = parseInt(localStorage.getItem('lastDailyBonusTime') || '0', 10);
+            let claimedCodes = JSON.parse(localStorage.getItem('claimedCodes') || '[]');
+            let videoSubscriptionExpiry = parseInt(localStorage.getItem('videoSubscriptionExpiry') || '0', 10); 
+            let isVideoUnlocked = false; 
+
+            // --- تحديث عرض النقاط وتخزينها ---
+            function updatePointsDisplay() {
+                pointsDisplayModal.textContent = points; 
+                currentPointsDisplay.textContent = points; 
+                localStorage.setItem('userPoints', points);
+            }
 
             // --- دالة مساعدة للحصول على أفضل جودة فيديو ---
             function getBestQualityVideoUrl(videoFiles) {
-                // Try to find the 'hd' quality first, then 'sd', then any mp4.
                 let hdVideo = videoFiles.find(file => file.quality === 'hd' && file.file_type === 'video/mp4');
                 let sdVideo = videoFiles.find(file => file.quality === 'sd' && file.file_type === 'video/mp4');
                 let anyMp4Video = videoFiles.find(file => file.file_type === 'video/mp4');
@@ -207,6 +311,11 @@
 
             // --- دالة لجلب الصور أو الفيديوهات من Pexels API ---
             async function fetchMedia(query, page, mediaType, append = false) { 
+                if (mediaType === 'videos' && !isVideoUnlocked) {
+                    console.log("Videos are locked. Cannot fetch.");
+                    return; 
+                }
+
                 if (isFetching || (!hasMore && append)) {
                     return; 
                 }
@@ -260,7 +369,7 @@
                             id: photo.id,
                             title: photo.alt || 'صورة بدون عنوان', 
                             category: photo.photographer || 'مصور غير معروف', 
-                            type: 'photo', // New: Identify as photo
+                            type: 'photo', 
                             src: photo.src.medium, 
                             original_src: photo.src.original 
                         }));
@@ -274,11 +383,11 @@
                         }
                         parsedMedia = data.videos.map(video => ({
                             id: video.id,
-                            title: video.url.split('/').pop().replace(/-/g, ' ') || 'فيديو بدون عنوان', // Use slug as title
+                            title: video.url.split('/').pop().replace(/-/g, ' ') || 'فيديو بدون عنوان', 
                             category: video.user.name || 'مصور غير معروف', 
-                            type: 'video', // New: Identify as video
-                            src: video.image, // Thumbnail image for video
-                            original_src: getBestQualityVideoUrl(video.video_files) // Get best quality video link for download/modal
+                            type: 'video', 
+                            src: video.image, 
+                            original_src: getBestQualityVideoUrl(video.video_files) 
                         }));
                         hasMore = (data.next_page !== undefined && data.next_page !== null);
                     }
@@ -304,7 +413,7 @@
                     if (!append) { 
                         gallery.classList.add('hidden'); 
                     }
-                    hasMore = false; // Stop infinite scroll on error
+                    hasMore = false; 
                 } finally {
                     isFetching = false;
                     loadingSpinner.classList.add('hidden'); 
@@ -356,7 +465,7 @@
                             </div>
                         `;
                     }
-                    item.addEventListener('click', () => openModal(mediaItem));
+                    item.addEventListener('click', () => openMediaModal(mediaItem));
                     gallery.appendChild(item);
                 });
             }
@@ -370,7 +479,7 @@
                     button.className = 'filter-btn px-4 py-2 text-sm font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition whitespace-nowrap';
                     
                     if (category.name === 'الكل') {
-                        button.classList.add('active-btn'); // Use active-btn for consistency
+                        button.classList.add('active-btn'); 
                         currentActiveFilterButton = button;
                     }
 
@@ -392,12 +501,11 @@
                 });
             }
 
-            // --- منطق المودال (Lightbox) ---
-            function openModal(mediaItem) {
-                // Hide both image and video elements first
+            // --- منطق المودال (Lightbox) للوسائط ---
+            function openMediaModal(mediaItem) {
                 modalImage.classList.add('hidden');
                 modalVideo.classList.add('hidden');
-                modalVideo.pause(); // Pause any currently playing video in modal
+                modalVideo.pause(); 
 
                 modalTitle.textContent = mediaItem.title;
                 downloadBtn.href = mediaItem.original_src;
@@ -410,42 +518,69 @@
                 } else { // mediaItem.type === 'video'
                     modalVideo.src = mediaItem.original_src;
                     modalVideo.classList.remove('hidden');
-                    modalVideo.load(); // Load the video
-                    modalVideo.play(); // Autoplay the video (muted by default)
+                    modalVideo.load(); 
+                    modalVideo.play(); 
                     downloadBtn.download = `${mediaItem.title.replace(/ /g, '_') || 'video'}.mp4`; 
                     downloadBtnText.textContent = 'تحميل الفيديو';
                 }
 
-                modal.classList.remove('hidden');
-                modal.classList.add('flex'); 
+                mediaModal.classList.remove('hidden');
+                mediaModal.classList.add('flex'); 
                 document.body.style.overflow = 'hidden'; 
             }
 
-            function closeModal() {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-                modalVideo.pause(); // Pause video when modal is closed
+            function closeMediaModal() {
+                mediaModal.classList.add('hidden');
+                mediaModal.classList.remove('flex');
+                modalVideo.pause(); 
                 document.body.style.overflow = 'auto'; 
             }
+
+            // --- منطق المودال الخاص بالنقاط ---
+            function openPointsModal() {
+                pointsModal.classList.remove('hidden');
+                pointsModal.classList.add('flex');
+                document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
+                updateDailyBonusButton(); // تحديث حالة زر الجائزة عند فتح المودال
+            }
+
+            function closePointsModalFn() { 
+                pointsModal.classList.add('hidden');
+                pointsModal.classList.remove('flex');
+                document.body.style.overflow = 'auto'; 
+            }
+
+            // --- منطق المودال الخاص بالاشتراكات ---
+            function openSubscriptionModal() {
+                subscriptionModal.classList.remove('hidden');
+                subscriptionModal.classList.add('flex');
+                document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
+                updateVideoSubscriptionSection(); // تحديث حالة الاشتراك عند فتح المودال
+            }
+
+            function closeSubscriptionModalFn() {
+                subscriptionModal.classList.add('hidden');
+                subscriptionModal.classList.remove('flex');
+                document.body.style.overflow = 'auto';
+            }
+
 
             // --- ربط الأحداث ---
             searchInput.addEventListener('input', async () => {
                 const query = searchInput.value.trim();
                 console.log('Search input event fired. Query:', query); 
-                // Remove active class from filter buttons when searching
                 if (currentActiveFilterButton) {
                     currentActiveFilterButton.classList.remove('active-btn');
                     currentActiveFilterButton = null;
                 }
                 
                 currentPage = 1;
-                currentQuery = query || (currentMediaType === 'photos' ? CATEGORIES[0].query : 'videos'); // Default to 'videos' for video search if empty
+                currentQuery = query || (currentMediaType === 'photos' ? CATEGORIES[0].query : 'videos'); 
                 hasMore = true; 
                 await fetchMedia(currentQuery, currentPage, currentMediaType, false); 
                 console.log('Search operation completed. allLoadedMedia count:', allLoadedMedia.length); 
             });
 
-            // Media type button event listeners
             photosBtn.addEventListener('click', async () => {
                 if (currentActiveMediaTypeButton) {
                     currentActiveMediaTypeButton.classList.remove('active-btn');
@@ -455,12 +590,20 @@
 
                 currentMediaType = 'photos';
                 currentPage = 1;
-                currentQuery = searchInput.value.trim() || CATEGORIES[0].query; // Use existing search or default category
+                currentQuery = searchInput.value.trim() || CATEGORIES[0].query; 
                 hasMore = true;
                 await fetchMedia(currentQuery, currentPage, currentMediaType, false);
             });
 
             videosBtn.addEventListener('click', async () => {
+                // If videos are locked, open subscription modal instead of fetching
+                if (!isVideoUnlocked) {
+                    openSubscriptionModal(); // Open subscription modal
+                    // Do not change currentMediaType or fetch videos if locked
+                    return; 
+                }
+
+                // If unlocked, proceed as usual
                 if (currentActiveMediaTypeButton) {
                     currentActiveMediaTypeButton.classList.remove('active-btn');
                 }
@@ -469,18 +612,219 @@
 
                 currentMediaType = 'videos';
                 currentPage = 1;
-                currentQuery = searchInput.value.trim() || 'videos'; // Default search query for videos
+                currentQuery = searchInput.value.trim() || 'videos'; 
                 hasMore = true;
                 await fetchMedia(currentQuery, currentPage, currentMediaType, false);
             });
 
-
-            closeModalBtn.addEventListener('click', closeModal);
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) {
-                    closeModal();
+            // Event listeners for Media Modal
+            closeMediaModalBtn.addEventListener('click', closeMediaModal);
+            mediaModal.addEventListener('click', (e) => {
+                if (e.target === mediaModal) {
+                    closeMediaModal();
                 }
             });
+
+            // Event listeners for Points Modal
+            openPointsModalBtn.addEventListener('click', openPointsModal);
+            closePointsModal.addEventListener('click', closePointsModalFn);
+            pointsModal.addEventListener('click', (e) => {
+                if (e.target === pointsModal) {
+                    closePointsModalFn();
+                }
+            });
+
+            // Event listeners for Subscription Modal
+            openSubscriptionModalBtn.addEventListener('click', openSubscriptionModal);
+            closeSubscriptionModal.addEventListener('click', closeSubscriptionModalFn);
+            subscriptionModal.addEventListener('click', (e) => {
+                if (e.target === subscriptionModal) {
+                    closeSubscriptionModalFn();
+                }
+            });
+
+            // --- منطق زر تجميع النقاط ---
+            let isCollectingOnCooldown = false; 
+            collectPointsBtnModal.addEventListener('click', () => {
+                if (isCollectingOnCooldown) {
+                    return; 
+                }
+
+                points++; 
+                updatePointsDisplay(); 
+
+                isCollectingOnCooldown = true; 
+                collectPointsBtnModal.disabled = true; 
+
+                let cooldownTime = 3; 
+                collectPointsBtnModal.textContent = `+1 نقطة (${cooldownTime} ثوانٍ...)`;
+
+                const cooldownInterval = setInterval(() => {
+                    cooldownTime--;
+                    if (cooldownTime > 0) {
+                        collectPointsBtnModal.textContent = `+1 نقطة (${cooldownTime} ثوانٍ...)`;
+                    } else {
+                        clearInterval(cooldownInterval);
+                        collectPointsBtnModal.textContent = 'اجمع نقطة';
+                        collectPointsBtnModal.disabled = false; 
+                        isCollectingOnCooldown = false; 
+                    }
+                }, 1000); 
+            });
+
+            // --- تحديث زر الجائزة اليومية ---
+            function updateDailyBonusButton() {
+                const now = Date.now();
+                const twentyFourHours = 24 * 60 * 60 * 1000;
+                const timePassed = now - lastDailyBonusTime;
+
+                if (timePassed >= twentyFourHours) {
+                    dailyBonusBtnModal.disabled = false;
+                    dailyBonusBtnModal.textContent = 'جائزة يومية: +50 نقطة';
+                    dailyBonusMessageModal.textContent = '';
+                } else {
+                    dailyBonusBtnModal.disabled = true;
+                    const remainingTime = twentyFourHours - timePassed;
+                    const hours = Math.floor(remainingTime / (1000 * 60 * 60));
+                    const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor(remainingTime % (1000 * 60)) / 1000; // Correct calculation for seconds
+                    dailyBonusMessageModal.textContent = `متاح بعد: ${hours}س ${minutes}د ${seconds.toFixed(0)}ث`;
+
+                    setTimeout(updateDailyBonusButton, 1000); 
+                }
+            }
+
+            // --- منطق زر الجائزة اليومية ---
+            dailyBonusBtnModal.addEventListener('click', () => {
+                if (dailyBonusBtnModal.disabled) { 
+                    return;
+                }
+
+                points += 50;
+                updatePointsDisplay();
+                lastDailyBonusTime = Date.now();
+                localStorage.setItem('lastDailyBonusTime', lastDailyBonusTime); 
+                updateDailyBonusButton(); 
+            });
+
+            // --- منطق استبدال الكود ---
+            redeemCodeBtnModal.addEventListener('click', () => {
+                const inputCode = code1000PointsInputModal.value.trim();
+                const correctCode = "ar56";
+                
+                if (inputCode === correctCode) {
+                    if (!claimedCodes.includes(correctCode)) {
+                        points += 1000;
+                        updatePointsDisplay();
+                        claimedCodes.push(correctCode);
+                        localStorage.setItem('claimedCodes', JSON.stringify(claimedCodes)); 
+                        codeMessageModal.textContent = 'تهانينا! لقد ربحت 1000 نقطة!';
+                        codeMessageModal.style.color = '#4CAF50'; 
+                        code1000PointsInputModal.value = ''; 
+                    } else {
+                        codeMessageModal.textContent = 'تم استخدام هذا الكود من قبل.';
+                        codeMessageModal.style.color = '#FFC107'; 
+                    }
+                } else {
+                    codeMessageModal.textContent = 'الكود غير صالح. حاول مرة أخرى.';
+                    codeMessageModal.style.color = '#F44336'; 
+                }
+
+                setTimeout(() => {
+                    codeMessageModal.textContent = '';
+                    codeMessageModal.style.color = ''; 
+                }, 5000); 
+            });
+
+            // --- منطق اشتراك الفيديو ---
+            function checkVideoSubscriptionStatus() {
+                const now = Date.now();
+                if (videoSubscriptionExpiry > now) {
+                    isVideoUnlocked = true;
+                    videosBtn.classList.add('active-btn'); 
+                    videosLockIcon.classList.add('hidden'); 
+                    videosBtn.title = "الفيديوهات (مفتوحة)";
+                    // Update message in modal
+                    const expiryDate = new Date(videoSubscriptionExpiry);
+                    videoSubscriptionMessageModal.textContent = `الاشتراك فعال حتى: ${expiryDate.toLocaleDateString()} ${expiryDate.toLocaleTimeString()}`;
+                    videoSubscriptionMessageModal.style.color = '#4CAF50';
+                    subscribeVideoBtnModal.disabled = true;
+                    subscribeVideoBtnModal.textContent = 'مشترك حالياً';
+
+                } else {
+                    isVideoUnlocked = false;
+                    videosBtn.classList.remove('active-btn');
+                    videosLockIcon.classList.remove('hidden'); 
+                    videosBtn.title = "الفيديوهات (مغلقة - اشترك)";
+                    videoSubscriptionMessageModal.textContent = 'الاشتراك غير فعال. اشترك بـ 1000 نقطة.';
+                    videoSubscriptionMessageModal.style.color = '#F44336';
+                    subscribeVideoBtnModal.disabled = false;
+                    subscribeVideoBtnModal.textContent = 'اشترك الآن';
+                }
+            }
+
+            function updateVideoSubscriptionSection() {
+                checkVideoSubscriptionStatus(); // Update status and display
+                const now = Date.now();
+                if (videoSubscriptionExpiry > now) {
+                     // If active, refresh countdown for active subscription.
+                    const remainingTime = videoSubscriptionExpiry - now;
+                    const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((remainingTime % (1000 * 60)) / 1000);
+                    videoSubscriptionMessageModal.textContent = `الاشتراك فعال لـ: ${days}ي ${hours}س ${minutes}د ${seconds.toFixed(0)}ث`;
+                    videoSubscriptionMessageModal.style.color = '#4CAF50';
+                    subscribeVideoBtnModal.disabled = true;
+                    subscribeVideoBtnModal.textContent = 'مشترك حالياً';
+                    setTimeout(updateVideoSubscriptionSection, 1000); // Update every second
+                } else {
+                    // Subscription expired or not active
+                    videoSubscriptionMessageModal.textContent = 'الاشتراك غير فعال. اشترك بـ 1000 نقطة.';
+                    videoSubscriptionMessageModal.style.color = '#F44336';
+                    subscribeVideoBtnModal.disabled = (points < 1000); // Disable if not enough points
+                    subscribeVideoBtnModal.textContent = 'اشترك الآن';
+                }
+            }
+
+
+            subscribeVideoBtnModal.addEventListener('click', async () => {
+                const subscriptionCost = 1000;
+                if (points >= subscriptionCost) {
+                    points -= subscriptionCost;
+                    updatePointsDisplay();
+                    videoSubscriptionExpiry = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days from now
+                    localStorage.setItem('videoSubscriptionExpiry', videoSubscriptionExpiry);
+                    checkVideoSubscriptionStatus(); // Update button and icon
+                    videoSubscriptionMessageModal.textContent = 'تهانينا! تم تفعيل اشتراك الفيديوهات.';
+                    videoSubscriptionMessageModal.style.color = '#4CAF50';
+                    // No longer close points modal, close subscription modal
+                    closeSubscriptionModalFn(); 
+                    // After subscribing, switch to videos and fetch them
+                    currentMediaType = 'videos';
+                    currentPage = 1;
+                    currentQuery = searchInput.value.trim() || 'videos'; 
+                    hasMore = true;
+                    // Visually activate the videos button in the main interface
+                    if (currentActiveMediaTypeButton) {
+                        currentActiveMediaTypeButton.classList.remove('active-btn');
+                    }
+                    videosBtn.classList.add('active-btn');
+                    currentActiveMediaTypeButton = videosBtn;
+                    await fetchMedia(currentQuery, currentPage, currentMediaType, false);
+
+                } else {
+                    videoSubscriptionMessageModal.textContent = `نقاط غير كافية. تحتاج إلى ${subscriptionCost - points} نقطة إضافية.`;
+                    videoSubscriptionMessageModal.style.color = '#F44336';
+                }
+                setTimeout(() => {
+                    if (videoSubscriptionExpiry <= Date.now()) { // Only clear if still expired
+                        videoSubscriptionMessageModal.textContent = '';
+                        videoSubscriptionMessageModal.style.color = '';
+                    }
+                }, 5000);
+            });
+
 
             // --- حدث التمرير للتحميل اللانهائي ---
             window.addEventListener('scroll', () => {
@@ -494,10 +838,16 @@
 
             // --- التشغيل الأولي: إعداد الأزرار وجلب الصور عند تحميل الصفحة ---
             setupFilterButtons();
-            // Activate the default media type button (Photos)
             photosBtn.classList.add('active-btn');
             currentActiveMediaTypeButton = photosBtn;
+            
+            checkVideoSubscriptionStatus(); // Check subscription status on load
+
             fetchMedia(currentQuery, currentPage, currentMediaType, false); 
+
+            // Initial calls for points system on load
+            updatePointsDisplay();
+            updateDailyBonusButton(); 
         });
     </script>
 </body>
