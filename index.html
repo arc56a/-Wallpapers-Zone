@@ -84,19 +84,19 @@
 
     <!-- Search and Filter Section -->
     <div class="container mx-auto px-4 sticky top-0 z-20 bg-black/50 backdrop-blur-sm py-4">
-        <!-- Media Type Buttons (Photos/Videos/VIP) -->
-        <div class="flex justify-center items-center space-x-4 space-x-reverse mb-6">
-            <button id="photosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition">
+        <!-- Media Type Buttons (Photos/Videos/Pinterest) -->
+        <div class="flex justify-center items-center space-x-4 space-x-reverse mb-6 overflow-x-auto no-scrollbar pb-2">
+            <button id="photosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition whitespace-nowrap">
                 الصور
             </button>
-            <button id="videosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition flex items-center justify-center">
+            <button id="videosBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition flex items-center justify-center whitespace-nowrap">
                 الفيديوهات 
                 <svg id="videosLockIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v3h8z" />
                 </svg>
             </button>
-            <!-- VIP button with gold color -->
-            <button id="vipBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-white bg-amber-500 rounded-full hover:bg-amber-600 transition transform hover:scale-105 active:scale-95">
+            <!-- Pinterest button with normal color -->
+            <button id="pinterestBtn" class="media-type-btn px-6 py-2 text-lg font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition whitespace-nowrap">
                 Pinterest
             </button>
         </div>
@@ -237,7 +237,7 @@
             const photosBtn = document.getElementById('photosBtn');   
             const videosBtn = document.getElementById('videosBtn');   
             const videosLockIcon = document.getElementById('videosLockIcon'); // Lock icon for videos button
-            const vipBtn = document.getElementById('vipBtn'); // New: VIP button
+            const pinterestBtn = document.getElementById('pinterestBtn'); // Renamed from vipBtn
 
             // --- عناصر Modal للوسائط (mediaModal) ---
             const mediaModal = document.getElementById('mediaModal'); 
@@ -622,8 +622,8 @@
                 await fetchMedia(currentQuery, currentPage, currentMediaType, false);
             });
 
-            // Event listener for the new VIP button
-            vipBtn.addEventListener('click', () => {
+            // Event listener for the new Pinterest button (formerly VIP)
+            pinterestBtn.addEventListener('click', () => {
                 // This button directly opens an external link
                 window.open('https://www.pinterest.com/', '_blank');
                 // Optional: Remove active state from other media type buttons if desired, but not strictly necessary for external link
@@ -774,7 +774,7 @@
                     videosBtn.title = "الفيديوهات (مغلقة - اشترك)";
                     videoSubscriptionMessageModal.textContent = 'الاشتراك غير فعال. اشترك بـ 1000 نقطة.';
                     videoSubscriptionMessageModal.style.color = '#F44336';
-                    subscribeVideoBtnModal.disabled = false;
+                    subscribeVideoBtnModal.disabled = (points < 1000); // Disable if not enough points
                     subscribeVideoBtnModal.textContent = 'اشترك الآن';
                 }
             }
