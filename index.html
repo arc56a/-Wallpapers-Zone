@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>معرض الصور والخلفيات</title>
+    <title>Wallpapers Zone</title>
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -25,7 +25,7 @@
         .gallery-item:hover .overlay {
             opacity: 1;
         }
-        /* إخفاء شريط التمرير */
+        /* إخفاء شريط التمرير (إذا كان هناك أي شريط تمرير زائد) */
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -37,6 +37,11 @@
         .filter-btn.active {
             background-color: #4f46e5; /* indigo-600 */
             color: white;
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+            transform: translateY(-2px);
+        }
+        .filter-btn {
+            transition: all 0.2s ease-in-out;
         }
     </style>
 </head>
@@ -46,10 +51,10 @@
     <header class="text-center py-12 md:py-20 bg-gray-900">
         <div class="container mx-auto px-4">
             <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500 mb-4">
-                اكتشف خلفيات مذهلة
+                Wallpapers Zone
             </h1>
             <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-                ابحث عن الصورة المثالية لجهازك من بين آلاف الصور عالية الجودة.
+                ابحث عن الصورة المثالية لجهازك من بين آلاف الخلفيات عالية الجودة.
             </p>
         </div>
     </header>
@@ -68,17 +73,28 @@
 
         <!-- Filter Buttons -->
         <div id="filterButtons" class="flex justify-center items-center space-x-2 space-x-reverse overflow-x-auto no-scrollbar pb-2">
-            <!-- سيتم إدراج الأزرار هنا بواسطة JavaScript -->
+            <!-- سيتم إدراج أزرار الفئات هنا بواسطة JavaScript -->
         </div>
     </div>
 
     <!-- Image Gallery -->
     <main class="container mx-auto p-4">
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center py-20 hidden">
+            <div class="animate-spin inline-block w-12 h-12 border-4 border-t-4 border-indigo-500 border-solid rounded-full"></div>
+            <p class="text-gray-400 mt-4 text-xl">جارٍ تحميل الصور...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="text-center text-red-500 py-20 text-xl hidden">
+            <!-- رسالة الخطأ ستظهر هنا ديناميكياً -->
+        </div>
+
         <div id="gallery" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <!-- سيتم إدراج الصور هنا بواسطة JavaScript -->
         </div>
         <div id="noResults" class="text-center text-gray-400 py-20 text-2xl hidden">
-            <p>لم يتم العثور على نتائج.</p>
+            <p>لم يتم العثور على نتائج للبحث الحالي.</p>
         </div>
     </main>
     
@@ -102,59 +118,102 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- بيانات الصور (استخدم صور حقيقية في مشروعك) ---
-            const images = [
-                { id: 1, title: "جبال وغيوم", category: "طبيعة", src: "https://placehold.co/600x800/262626/FFFFFF?text=طبيعة+1" },
-                { id: 2, title: "أفق المدينة ليلاً", category: "مدن", src: "https://placehold.co/600x800/1a202c/FFFFFF?text=مدن+1" },
-                { id: 3, title: "شريحة إلكترونية", category: "تقنية", src: "https://placehold.co/600x800/0c4a6e/FFFFFF?text=تقنية+1" },
-                { id: 4, title: "ألوان مجردة", category: "فن", src: "https://placehold.co/600x800/4c1d95/FFFFFF?text=فن+1" },
-                { id: 5, title: "نمر في الغابة", category: "حيوانات", src: "https://placehold.co/600x800/166534/FFFFFF?text=حيوانات+1" },
-                { id: 6, title: "ساحل صخري", category: "طبيعة", src: "https://placehold.co/600x800/312e81/FFFFFF?text=طبيعة+2" },
-                { id: 7, title: "طرق سريعة متشابكة", category: "مدن", src: "https://placehold.co/600x800/4a5568/FFFFFF?text=مدن+2" },
-                { id: 8, title: "شاطئ استوائي", category: "طبيعة", src: "https://placehold.co/600x800/0d9488/FFFFFF?text=طبيعة+3" },
-                { id: 9, title: "كود برمجي", category: "تقنية", src: "https://placehold.co/600x800/1e1b4b/FFFFFF?text=تقنية+2" },
-                { id: 10, title: "أسد مهيب", category: "حيوانات", src: "https://placehold.co/600x800/7c2d12/FFFFFF?text=حيوانات+2" },
-                { id: 11, title: "غابة ضبابية", category: "طبيعة", src: "https://placehold.co/600x800/1f2937/FFFFFF?text=طبيعة+4" },
-                { id: 12, title: "ناطحات سحاب", category: "مدن", src: "https://placehold.co/600x800/1e3a8a/FFFFFF?text=مدن+3" },
-                { id: 13, title: "فن الشارع (جرافيتي)", category: "فن", src: "https://placehold.co/600x800/7f1d1d/FFFFFF?text=فن+2" },
-                { id: 14, title: "ذئب في الثلج", category: "حيوانات", src: "https://placehold.co/600x800/e5e7eb/000000?text=حيوانات+3" },
-                { id: 15, title: "روبوت مستقبلي", category: "تقنية", src: "https://placehold.co/600x800/374151/FFFFFF?text=تقنية+3" },
-                { id: 16, title: "مجرة درب التبانة", category: "فضاء", src: "https://placehold.co/600x800/000000/FFFFFF?text=فضاء+1" },
-                { id: 17, title: "صحراء واسعة", category: "طبيعة", src: "https://placehold.co/600x800/b45309/FFFFFF?text=طبيعة+5" },
-                { id: 18, title: "شوارع طوكيو المضيئة", category: "مدن", src: "https://placehold.co/600x800/be123c/FFFFFF?text=مدن+4" },
-                { id: 19, "title": "كوكب زحل", "category": "فضاء", "src": "https://placehold.co/600x800/2d3748/FFFFFF?text=فضاء+2" },
-                { id: 20, "title": "فن تجريدي حديث", "category": "فن", "src": "https://placehold.co/600x800/6d28d9/FFFFFF?text=فن+3" }
-            ];
+            // مفتاح Pexels API الخاص بك
+            const API_KEY = 'Seq0UzUmWDBJxYw9x0lyGydsk25Nm1Vgdp6uWQaoBw13Egz35HWVAMTG'; 
 
             // --- عناصر DOM ---
             const gallery = document.getElementById('gallery');
             const searchInput = document.getElementById('searchInput');
-            const filterButtonsContainer = document.getElementById('filterButtons');
             const noResults = document.getElementById('noResults');
             const modal = document.getElementById('modal');
             const modalImage = document.getElementById('modalImage');
             const modalTitle = document.getElementById('modalTitle');
             const closeModalBtn = document.getElementById('closeModal');
             const downloadBtn = document.getElementById('downloadBtn');
-            
-            let currentFilter = 'الكل';
+            const loadingSpinner = document.getElementById('loadingSpinner'); 
+            const errorMessage = document.getElementById('errorMessage');    
+            const filterButtonsContainer = document.getElementById('filterButtons');
 
-            // --- دالة عرض الصور ---
+            // قائمة الفئات للفلترة
+            const CATEGORIES = [
+                { name: 'الكل', query: 'wallpapers' },
+                { name: 'طبيعة', query: 'nature wallpapers' },
+                { name: 'مدن', query: 'city wallpapers' },
+                { name: 'فضاء', query: 'space wallpapers' },
+                { name: 'حيوانات', query: 'animal wallpapers' },
+                { name: 'تجريدي', query: 'abstract wallpapers' },
+                { name: 'تقنية', query: 'technology wallpapers' },
+                { name: 'رياضة', query: 'sports wallpapers' },
+                { name: 'سيارات', query: 'car wallpapers' }
+            ];
+
+            let currentActiveFilterButton = null; // لتتبع الزر النشط حالياً
+
+            // --- دالة لجلب الصور من Pexels API ---
+            async function fetchImages(query) { 
+                loadingSpinner.classList.remove('hidden'); // إظهار مؤشر التحميل
+                errorMessage.classList.add('hidden');      // إخفاء أي رسالة خطأ سابقة
+                gallery.classList.add('hidden');           // إخفاء المعرض أثناء التحميل
+                noResults.classList.add('hidden');         // إخفاء رسالة "لا توجد نتائج" أثناء التحميل
+
+                try {
+                    const url = `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=30`; // زيادة عدد الصور لكل صفحة
+                    const response = await fetch(url, {
+                        headers: {
+                            Authorization: API_KEY // استخدام مفتاح API للمصادقة
+                        }
+                    });
+
+                    if (!response.ok) {
+                        // معالجة أخطاء HTTP (مثلاً 403 للمفتاح غير الصالح/حدود الاستخدام)
+                        if (response.status === 403) {
+                            throw new Error("خطأ في الواجهة البرمجية: تأكد من صحة مفتاح API أو تجاوزت حد الاستخدام اليومي.");
+                        }
+                        throw new Error(`خطأ في الشبكة: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (!data.photos || data.photos.length === 0) {
+                        return []; // لا توجد صور مطابقة للاستعلام
+                    }
+
+                    // تحويل بيانات Pexels إلى التنسيق المطلوب لعرضها في المعرض
+                    return data.photos.map(photo => ({
+                        id: photo.id,
+                        title: photo.alt || 'صورة بدون عنوان', // استخدام نص بديل للصورة كعنوان
+                        category: photo.photographer || 'مصور غير معروف', // استخدام اسم المصور كفئة مؤقتة
+                        src: photo.src.medium, // استخدام جودة متوسطة لعرضها في المعرض لسرعة التحميل
+                        original_src: photo.src.original // استخدام الجودة الأصلية لزر التحميل
+                    }));
+
+                } catch (error) {
+                    console.error('حدث خطأ أثناء جلب الصور من Pexels:', error);
+                    errorMessage.textContent = error.message || 'عذراً، حدث خطأ أثناء تحميل الصور من Pexels. الرجاء المحاولة مرة أخرى لاحقاً.';
+                    errorMessage.classList.remove('hidden'); // إظهار رسالة الخطأ
+                    gallery.classList.add('hidden'); // التأكد من إخفاء المعرض عند الخطأ
+                    return []; // إرجاع مصفوفة فارغة عند الخطأ
+                } finally {
+                    loadingSpinner.classList.add('hidden'); // إخفاء مؤشر التحميل دائماً
+                }
+            }
+
+            // --- دالة عرض الصور في المعرض ---
             function displayImages(imagesToDisplay) {
-                gallery.innerHTML = '';
+                gallery.innerHTML = ''; // مسح المحتوى الحالي للمعرض
                 if (imagesToDisplay.length === 0) {
-                    noResults.classList.remove('hidden');
+                    noResults.classList.remove('hidden'); // إظهار رسالة "لا توجد نتائج"
                     gallery.classList.add('hidden');
                 } else {
-                    noResults.classList.add('hidden');
-                    gallery.classList.remove('hidden');
+                    noResults.classList.add('hidden'); // إخفاء رسالة "لا توجد نتائج"
+                    gallery.classList.remove('hidden'); // إظهار المعرض
                 }
 
                 imagesToDisplay.forEach(image => {
                     const item = document.createElement('div');
-                    item.className = 'gallery-item relative rounded-lg overflow-hidden cursor-pointer group shadow-lg';
+                    item.className = 'gallery-item relative rounded-lg overflow-hidden cursor-pointer group shadow-lg transition-all duration-300 transform hover:scale-105';
                     item.innerHTML = `
-                        <img src="${image.src}" alt="${image.title}" class="w-full h-full object-cover transition duration-300 transform group-hover:scale-110" loading="lazy">
+                        <img src="${image.src}" alt="${image.title}" class="w-full h-48 sm:h-64 md:h-72 object-cover transition duration-300 transform group-hover:scale-110" loading="lazy">
                         <div class="overlay absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 p-4">
                             <div class="text-center">
                                 <h3 class="font-bold text-lg">${image.title}</h3>
@@ -162,82 +221,90 @@
                             </div>
                         </div>
                     `;
+                    // عند النقر على الصورة، افتح المودال
                     item.addEventListener('click', () => openModal(image));
                     gallery.appendChild(item);
                 });
             }
 
-            // --- دالة إنشاء أزرار الفلترة ---
-            function setupFilters() {
-                const categories = ['الكل', ...new Set(images.map(img => img.category))];
-                filterButtonsContainer.innerHTML = '';
-                categories.forEach(category => {
+            // --- دالة إعداد أزرار الفلترة ---
+            function setupFilterButtons() {
+                filterButtonsContainer.innerHTML = ''; // مسح الأزرار القديمة
+                CATEGORIES.forEach(category => {
                     const button = document.createElement('button');
-                    button.textContent = category;
+                    button.textContent = category.name;
                     button.className = 'filter-btn px-4 py-2 text-sm font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition whitespace-nowrap';
-                    if (category === 'الكل') {
+                    
+                    // تعيين زر "الكل" كنشط افتراضياً عند التحميل الأولي
+                    if (category.name === 'الكل') {
                         button.classList.add('active');
+                        currentActiveFilterButton = button;
                     }
-                    button.addEventListener('click', () => {
-                        currentFilter = category;
-                        // تحديث النمط النشط
-                        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+
+                    button.addEventListener('click', async () => {
+                        // إزالة النمط النشط من الزر السابق
+                        if (currentActiveFilterButton) {
+                            currentActiveFilterButton.classList.remove('active');
+                        }
+                        // إضافة النمط النشط للزر الحالي
                         button.classList.add('active');
-                        // تطبيق الفلترة
-                        filterAndSearch();
+                        currentActiveFilterButton = button;
+                        
+                        // مسح حقل البحث عند اختيار فئة
+                        searchInput.value = '';
+
+                        // جلب الصور بناءً على استعلام الفئة
+                        const images = await fetchImages(category.query);
+                        displayImages(images);
                     });
                     filterButtonsContainer.appendChild(button);
                 });
             }
 
-            // --- دالة الفلترة والبحث المدمجة ---
-            function filterAndSearch() {
-                const searchTerm = searchInput.value.toLowerCase();
-                
-                let filteredImages = images;
-
-                // تطبيق فلتر التصنيف
-                if (currentFilter !== 'الكل') {
-                    filteredImages = filteredImages.filter(image => image.category === currentFilter);
-                }
-
-                // تطبيق فلتر البحث
-                if (searchTerm) {
-                    filteredImages = filteredImages.filter(image => image.title.toLowerCase().includes(searchTerm));
-                }
-
-                displayImages(filteredImages);
-            }
 
             // --- منطق المودال (Lightbox) ---
             function openModal(image) {
-                modalImage.src = image.src;
+                modalImage.src = image.original_src; // استخدام الجودة الأصلية في المودال
                 modalTitle.textContent = image.title;
-                downloadBtn.href = image.src;
-                downloadBtn.download = `${image.title.replace(' ', '_')}.jpg`;
+                downloadBtn.href = image.original_src;
+                // إنشاء اسم ملف للتحميل (استبدال المسافات بشرطات سفلية)
+                downloadBtn.download = `${image.title.replace(/ /g, '_') || 'wallpaper'}.jpg`; 
                 modal.classList.remove('hidden');
-                modal.classList.add('flex');
-                document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
+                modal.classList.add('flex'); // لجعل المودال مرئياً ومرتكزاً
+                document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية عند فتح المودال
             }
 
             function closeModal() {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                document.body.style.overflow = 'auto'; // إعادة التمرير
+                document.body.style.overflow = 'auto'; // إعادة التمرير عند إغلاق المودال
             }
 
             // --- ربط الأحداث ---
-            searchInput.addEventListener('input', filterAndSearch);
+            // عند الكتابة في حقل البحث، قم بجلب وعرض الصور
+            searchInput.addEventListener('input', async () => {
+                const query = searchInput.value.trim();
+                // إزالة النمط النشط من زر الفلتر عند البحث
+                if (currentActiveFilterButton) {
+                    currentActiveFilterButton.classList.remove('active');
+                    currentActiveFilterButton = null;
+                }
+                const images = await fetchImages(query || CATEGORIES[0].query); // إذا كان البحث فارغاً، عد إلى فئة "الكل" الافتراضية
+                displayImages(images);
+            });
+
+            // عند النقر على زر إغلاق المودال
             closeModalBtn.addEventListener('click', closeModal);
+            // عند النقر خارج الصورة في المودال، قم بإغلاق المودال
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     closeModal();
                 }
             });
 
-            // --- التشغيل الأولي ---
-            setupFilters();
-            displayImages(images);
+            // --- التشغيل الأولي: إعداد الأزرار وجلب الصور عند تحميل الصفحة ---
+            setupFilterButtons();
+            fetchImages(CATEGORIES[0].query).then(displayImages); // جلب الصور الافتراضية "الكل" عند البدء
         });
     </script>
 </body>
