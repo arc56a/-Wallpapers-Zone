@@ -17,6 +17,9 @@
     <style>
         body {
             font-family: 'Cairo', sans-serif;
+            /* خلفية متدرجة من الأسود إلى الأحمر الداكن مع هيمنة الأسود */
+            background: linear-gradient(to bottom, #000000 75%, #300000 100%);
+            background-attachment: fixed; /* لضمان تغطية التدرج لكامل الصفحة عند التمرير */
         }
         /* تأثير التحويم على الصور */
         .gallery-item .overlay {
@@ -43,14 +46,19 @@
         .filter-btn {
             transition: all 0.2s ease-in-out;
         }
+        /* نمط راقي لاسم الموقع (h1) */
+        .classy-text-glow {
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 15px rgba(255, 255, 255, 0.3);
+        }
     </style>
 </head>
-<body class="bg-gray-900 text-white">
+<body class="text-white"> <!-- إزالة bg-gray-900 من body لتطبيق التدرج -->
 
     <!-- Header -->
-    <header class="text-center py-12 md:py-20 bg-gray-900">
+    <header class="text-center py-12 md:py-20"> <!-- إزالة bg-gray-900 من Header -->
         <div class="container mx-auto px-4">
-            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500 mb-4">
+            <!-- تحديث نمط h1 ليكون راقياً أكثر مع تدرج ذهبي ولمسة توهج خفيفة -->
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-yellow-100 to-yellow-500 mb-4 classy-text-glow">
                 Wallpapers Zone
             </h1>
             <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
@@ -60,7 +68,8 @@
     </header>
 
     <!-- Search and Filter Section -->
-    <div class="container mx-auto px-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-sm py-4">
+    <!-- إزالة bg-gray-900/80 وتغييرها لـ bg-black/50 لجعلها شفافة أكثر وتسمح بمرور التدرج -->
+    <div class="container mx-auto px-4 sticky top-0 z-20 bg-black/50 backdrop-blur-sm py-4">
         <!-- Search Bar -->
         <div class="relative max-w-xl mx-auto mb-6">
             <input type="text" id="searchInput" placeholder="ابحث عن خلفيات..." class="w-full bg-gray-800 text-white border-2 border-gray-700 rounded-full py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
