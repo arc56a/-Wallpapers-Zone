@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معرض الصور والخلفيات</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: Cairo -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+        }
+        /* تأثير التحويم على الصور */
+        .gallery-item .overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .gallery-item:hover .overlay {
+            opacity: 1;
+        }
+        /* إخفاء شريط التمرير */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+        /* النمط النشط لأزرار الفلتر */
+        .filter-btn.active {
+            background-color: #4f46e5; /* indigo-600 */
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <!-- Header -->
+    <header class="text-center py-12 md:py-20 bg-gray-900">
+        <div class="container mx-auto px-4">
+            <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-500 mb-4">
+                اكتشف خلفيات مذهلة
+            </h1>
+            <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
+                ابحث عن الصورة المثالية لجهازك من بين آلاف الصور عالية الجودة.
+            </p>
+        </div>
+    </header>
+
+    <!-- Search and Filter Section -->
+    <div class="container mx-auto px-4 sticky top-0 z-20 bg-gray-900/80 backdrop-blur-sm py-4">
+        <!-- Search Bar -->
+        <div class="relative max-w-xl mx-auto mb-6">
+            <input type="text" id="searchInput" placeholder="ابحث عن خلفيات..." class="w-full bg-gray-800 text-white border-2 border-gray-700 rounded-full py-3 pr-12 pl-4 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+            <div class="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div id="filterButtons" class="flex justify-center items-center space-x-2 space-x-reverse overflow-x-auto no-scrollbar pb-2">
+            <!-- سيتم إدراج الأزرار هنا بواسطة JavaScript -->
+        </div>
+    </div>
+
+    <!-- Image Gallery -->
+    <main class="container mx-auto p-4">
+        <div id="gallery" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <!-- سيتم إدراج الصور هنا بواسطة JavaScript -->
+        </div>
+        <div id="noResults" class="text-center text-gray-400 py-20 text-2xl hidden">
+            <p>لم يتم العثور على نتائج.</p>
+        </div>
+    </main>
+    
+    <!-- Modal (Lightbox) -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50 hidden p-4">
+        <div class="relative bg-gray-800 rounded-lg max-w-4xl max-h-full w-full h-auto overflow-auto">
+             <button id="closeModal" class="absolute top-4 right-4 text-white text-4xl font-bold z-10">&times;</button>
+             <img id="modalImage" src="" alt="صورة مكبرة" class="w-full h-auto object-contain rounded-t-lg max-h-[75vh]">
+             <div class="p-6">
+                <h3 id="modalTitle" class="text-2xl font-bold mb-4"></h3>
+                <a id="downloadBtn" href="#" download="wallpaper.jpg" class="inline-flex items-center justify-center w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    تحميل الصورة
+                </a>
+             </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- بيانات الصور (استخدم صور حقيقية في مشروعك) ---
+            const images = [
+                { id: 1, title: "جبال وغيوم", category: "طبيعة", src: "https://placehold.co/600x800/262626/FFFFFF?text=طبيعة+1" },
+                { id: 2, title: "أفق المدينة ليلاً", category: "مدن", src: "https://placehold.co/600x800/1a202c/FFFFFF?text=مدن+1" },
+                { id: 3, title: "شريحة إلكترونية", category: "تقنية", src: "https://placehold.co/600x800/0c4a6e/FFFFFF?text=تقنية+1" },
+                { id: 4, title: "ألوان مجردة", category: "فن", src: "https://placehold.co/600x800/4c1d95/FFFFFF?text=فن+1" },
+                { id: 5, title: "نمر في الغابة", category: "حيوانات", src: "https://placehold.co/600x800/166534/FFFFFF?text=حيوانات+1" },
+                { id: 6, title: "ساحل صخري", category: "طبيعة", src: "https://placehold.co/600x800/312e81/FFFFFF?text=طبيعة+2" },
+                { id: 7, title: "طرق سريعة متشابكة", category: "مدن", src: "https://placehold.co/600x800/4a5568/FFFFFF?text=مدن+2" },
+                { id: 8, title: "شاطئ استوائي", category: "طبيعة", src: "https://placehold.co/600x800/0d9488/FFFFFF?text=طبيعة+3" },
+                { id: 9, title: "كود برمجي", category: "تقنية", src: "https://placehold.co/600x800/1e1b4b/FFFFFF?text=تقنية+2" },
+                { id: 10, title: "أسد مهيب", category: "حيوانات", src: "https://placehold.co/600x800/7c2d12/FFFFFF?text=حيوانات+2" },
+                { id: 11, title: "غابة ضبابية", category: "طبيعة", src: "https://placehold.co/600x800/1f2937/FFFFFF?text=طبيعة+4" },
+                { id: 12, title: "ناطحات سحاب", category: "مدن", src: "https://placehold.co/600x800/1e3a8a/FFFFFF?text=مدن+3" },
+                { id: 13, title: "فن الشارع (جرافيتي)", category: "فن", src: "https://placehold.co/600x800/7f1d1d/FFFFFF?text=فن+2" },
+                { id: 14, title: "ذئب في الثلج", category: "حيوانات", src: "https://placehold.co/600x800/e5e7eb/000000?text=حيوانات+3" },
+                { id: 15, title: "روبوت مستقبلي", category: "تقنية", src: "https://placehold.co/600x800/374151/FFFFFF?text=تقنية+3" },
+                { id: 16, title: "مجرة درب التبانة", category: "فضاء", src: "https://placehold.co/600x800/000000/FFFFFF?text=فضاء+1" },
+                { id: 17, title: "صحراء واسعة", category: "طبيعة", src: "https://placehold.co/600x800/b45309/FFFFFF?text=طبيعة+5" },
+                { id: 18, title: "شوارع طوكيو المضيئة", category: "مدن", src: "https://placehold.co/600x800/be123c/FFFFFF?text=مدن+4" },
+                { id: 19, "title": "كوكب زحل", "category": "فضاء", "src": "https://placehold.co/600x800/2d3748/FFFFFF?text=فضاء+2" },
+                { id: 20, "title": "فن تجريدي حديث", "category": "فن", "src": "https://placehold.co/600x800/6d28d9/FFFFFF?text=فن+3" }
+            ];
+
+            // --- عناصر DOM ---
+            const gallery = document.getElementById('gallery');
+            const searchInput = document.getElementById('searchInput');
+            const filterButtonsContainer = document.getElementById('filterButtons');
+            const noResults = document.getElementById('noResults');
+            const modal = document.getElementById('modal');
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('modalTitle');
+            const closeModalBtn = document.getElementById('closeModal');
+            const downloadBtn = document.getElementById('downloadBtn');
+            
+            let currentFilter = 'الكل';
+
+            // --- دالة عرض الصور ---
+            function displayImages(imagesToDisplay) {
+                gallery.innerHTML = '';
+                if (imagesToDisplay.length === 0) {
+                    noResults.classList.remove('hidden');
+                    gallery.classList.add('hidden');
+                } else {
+                    noResults.classList.add('hidden');
+                    gallery.classList.remove('hidden');
+                }
+
+                imagesToDisplay.forEach(image => {
+                    const item = document.createElement('div');
+                    item.className = 'gallery-item relative rounded-lg overflow-hidden cursor-pointer group shadow-lg';
+                    item.innerHTML = `
+                        <img src="${image.src}" alt="${image.title}" class="w-full h-full object-cover transition duration-300 transform group-hover:scale-110" loading="lazy">
+                        <div class="overlay absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center opacity-0 p-4">
+                            <div class="text-center">
+                                <h3 class="font-bold text-lg">${image.title}</h3>
+                                <p class="text-sm text-gray-300">${image.category}</p>
+                            </div>
+                        </div>
+                    `;
+                    item.addEventListener('click', () => openModal(image));
+                    gallery.appendChild(item);
+                });
+            }
+
+            // --- دالة إنشاء أزرار الفلترة ---
+            function setupFilters() {
+                const categories = ['الكل', ...new Set(images.map(img => img.category))];
+                filterButtonsContainer.innerHTML = '';
+                categories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.textContent = category;
+                    button.className = 'filter-btn px-4 py-2 text-sm font-semibold text-gray-300 bg-gray-800 rounded-full hover:bg-indigo-500 hover:text-white transition whitespace-nowrap';
+                    if (category === 'الكل') {
+                        button.classList.add('active');
+                    }
+                    button.addEventListener('click', () => {
+                        currentFilter = category;
+                        // تحديث النمط النشط
+                        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        // تطبيق الفلترة
+                        filterAndSearch();
+                    });
+                    filterButtonsContainer.appendChild(button);
+                });
+            }
+
+            // --- دالة الفلترة والبحث المدمجة ---
+            function filterAndSearch() {
+                const searchTerm = searchInput.value.toLowerCase();
+                
+                let filteredImages = images;
+
+                // تطبيق فلتر التصنيف
+                if (currentFilter !== 'الكل') {
+                    filteredImages = filteredImages.filter(image => image.category === currentFilter);
+                }
+
+                // تطبيق فلتر البحث
+                if (searchTerm) {
+                    filteredImages = filteredImages.filter(image => image.title.toLowerCase().includes(searchTerm));
+                }
+
+                displayImages(filteredImages);
+            }
+
+            // --- منطق المودال (Lightbox) ---
+            function openModal(image) {
+                modalImage.src = image.src;
+                modalTitle.textContent = image.title;
+                downloadBtn.href = image.src;
+                downloadBtn.download = `${image.title.replace(' ', '_')}.jpg`;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                document.body.style.overflow = 'hidden'; // منع التمرير في الخلفية
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                document.body.style.overflow = 'auto'; // إعادة التمرير
+            }
+
+            // --- ربط الأحداث ---
+            searchInput.addEventListener('input', filterAndSearch);
+            closeModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // --- التشغيل الأولي ---
+            setupFilters();
+            displayImages(images);
+        });
+    </script>
+</body>
+</html>
